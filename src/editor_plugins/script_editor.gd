@@ -1,4 +1,4 @@
-extends EditorContextMenuPlugin
+extends "res://addons/_lib/popup_wrapper/src/context_menu.gd" #! ext PopupWrapper.ContextMenu
 
 const SLOT = CONTEXT_SLOT_SCRIPT_EDITOR_CODE
 
@@ -11,12 +11,13 @@ const Pr = UtilsRemote.Pr
 const CALL = "EditorConsole/Call"
 const INFO = "EditorConsole/Info"
 
-func _popup_menu(paths: PackedStringArray) -> void:
-	var script_editor = Engine.get_main_loop().root.get_node(paths[0])
+func _get_menu_options(data) -> void:
+	var script_editor = PopupWrapper.Slots.code_edit(data)
 	var valid_items = _get_valid_items(script_editor)
-	PopupWrapper.ContextPlugin.create_items(self, script_editor, valid_items, _callback)
+	PopupWrapper.ContextPlugin.create_items(self, data, valid_items, _callback)
 
-func _callback(script_editor:CodeEdit, path):
+func _callback(data, path):
+	var script_editor:CodeEdit = PopupWrapper.Slots.code_edit(data)
 	var word = script_editor.get_word_under_caret()
 	if path == CALL:
 		var ed_console = EditorConsoleSingleton.get_instance()
