@@ -25,3 +25,6 @@ const MemberParse = preload("uid://ccgs5uvjcchb1") #! resolve GDScriptParser.Mem
 const UResource = preload("uid://xwy6i4dlbtvs") #! resolve UtilR.Resources.UResource
 const UTexture = preload("uid://cp6d2gyih02s2") #! resolve UtilR.Resources.UTexture
 const UList = preload("uid://cpehya7u8ggby") #! resolve UtilR.Collections.UList
+
+const PackageCfg = preload("uid://ddo8w07hts45v") #! resolve GDPackageSpec.Cfg
+const ExportIgnore = preload("uid://c4pt5djyuf8c") #! resolve GDPackageSpec.ExportIgnore

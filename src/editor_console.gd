@@ -14,6 +14,8 @@ const UFile = UtilsRemote.UFile
 const UString = UtilsRemote.UString
 const Pr = UtilsRemote.Pr
 const GetFiles = UtilsRemote.GetFiles
+const PackageCfg = UtilsRemote.PackageCfg
+const ExportIgnore = UtilsRemote.ExportIgnore
 
 
 const UtilsLocal = preload("res://addons/editor_console/src/utils/console_utils_local.gd")
@@ -633,8 +635,8 @@ static func get_dir_paths():
 static func get_packages() -> Dictionary:
 	return get_instance()._get_cached("packages")
 
-const PACKAGE_CFGS = ["plugin.cfg", "addon.cfg", "version.cfg"]
-const EXPORT_IGNORE_DIRS = ["_export_ignore", "export_ignore"] # preference order
+const PACKAGE_CFGS = PackageCfg.NAMES
+const EXPORT_IGNORE_DIRS = ExportIgnore.NAMES # preference order
 
 func _get_cached(key:String):
 	if _cache == null:
@@ -663,7 +665,7 @@ func _build_packages(dirs:Array) -> Dictionary:
 		var segments = dir.trim_prefix("res://").split("/")
 		if EXPORT_IGNORE_DIRS.any(func(d): return d in segments):
 			continue
-		if not PACKAGE_CFGS.any(func(c): return FileAccess.file_exists(dir.path_join(c))):
+		if not PackageCfg.has_cfg(dir):
 			continue
 		var nm = dir.get_file()
 		if found.packages.has(nm):
