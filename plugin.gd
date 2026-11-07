@@ -34,6 +34,6 @@ func _on_tool_menu():
 	layout.add_panel(TERM_CONTAINER_PATH)
 	var sps = EditorPanelSingleton.PluginSplitPanel.new()
 
-	dm_im.new_freeable_dock_manager(sps, DockManager.Slot.FLOATING)
+	dm_im.new_freeable_dock_manager(sps, DockManager.DOCK_SLOT_NONE)
 	
 	sps.load_layout(layout)
