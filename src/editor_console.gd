@@ -92,12 +92,14 @@ func _init(plugin:EditorPlugin) -> void:
 	# add func to load user config
 
 func _ready() -> void:
-	EditorNodeRef.call_on_ready(_add_console_line_edit)
 	_ready_deferred.call_deferred()
 	EditorInterface.get_resource_filesystem().filesystem_changed.connect(_on_filesystem_changed)
 
 func _ready_deferred():
 	_load_default_commands()
+	# After loading: on plugin enable EditorNodeRef is already populated, so the console is
+	# added at once and builds its ctx from whatever scopes are loaded at that moment.
+	EditorNodeRef.call_on_ready(_add_console_line_edit)
 	EditorNodeRef.call_on_ready(_start_up_commands)
 
 func _start_up_commands():
