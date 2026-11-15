@@ -1,3 +1,5 @@
+# Included Commands
+
 Editor Console uses GDSh for shell builtins (`builtins`) and gdsh_lib utils for
 portable utilities (`utils`); editor-only utilities are under `misc editor_console`.
 All are also directly callable hidden root commands; `hidden` lists the namespaces.
