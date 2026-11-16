@@ -51,6 +51,12 @@ var show_filter:bool = true
 
 var settings_helper:UtilsRemote.SettingHelperEditor
 var _console_replace_filter:bool=false
+# Console input on its own row under the log filter row. SettingHelper re-sets this on every
+# editor-settings change, so applying it must be idempotent.
+var console_below_filter:bool = false:
+	set(value):
+		console_below_filter = value
+		_apply_console_position()
 # When true, mutating scene commands register on the editor undo stack (Ctrl+Z).
 # When false they apply directly with no undo entry. Toggle via `config undo on|off`.
 var undo_tracking:bool = true
@@ -83,6 +89,7 @@ func _init(plugin:EditorPlugin) -> void:
 	settings_helper.subscribe_property(self, &"_console_replace_filter", EditorSet.CONSOLE_REPLACE_FILTER, false)
 	settings_helper.subscribe_property(self, &"undo_tracking", EditorSet.TRACK_UNDO_REDO, true)
 	settings_helper.subscribe_property(self, &"stream_output", EditorSet.STREAM_OUTPUT, true)
+	settings_helper.subscribe_property(self, &"console_below_filter", EditorSet.CONSOLE_BELOW_FILTER, false)
 	settings_helper.initialize()
 	
 	script_editor_context = ScriptEditorContext.new()
@@ -451,12 +458,18 @@ func _add_console_line_edit():
 	right_click_handler = RightClickHandler.new()
 	editor_container.add_child(right_click_handler)
 
+	_apply_console_position() # The setting may have loaded before the container existed.
+
 
 func _remove_console_line_edit():
 	var editor_log_hbox = main_hsplit.get_parent()
 	filter_line_edit.reparent(editor_log_hbox)
 	filter_line_edit.show()
-	
+
+	# A prompt moved below the filter row is outside main_hsplit, so freeing that misses it.
+	var console = editor_container.console
+	if is_instance_valid(console) and console.get_parent() != editor_container:
+		console.queue_free()
 	main_hsplit.queue_free()
 	filter_line_edit = null
 
@@ -477,29 +490,53 @@ func _get_editor_log_button_refs():
 func _on_filter_toggled(toggled:bool) -> void: # this is the filter toggle in editor log panel
 	editor_container.visible = toggled
 	if toggled:
-		if not editor_container.line_edit.visible: # if console is not visible, show filter regardless of last setting
-			filter_line_edit.show()
-		elif not _can_show_filter():
-			filter_line_edit.hide()
+		_refresh_console_layout()
+		if editor_container.line_edit.visible and not filter_line_edit.visible:
 			editor_container.line_edit.grab_focus()
-		else:
-			filter_line_edit.visible = show_filter
+	elif console_below_filter:
+		editor_container.console_panel.hide() # The below row is outside editor_container.
 
 
 func _toggle_console():
 	editor_container.line_edit.visible = not editor_container.line_edit.visible
+	_refresh_console_layout()
 	if editor_container.line_edit.visible:
-		main_hsplit.collapsed = false
-		editor_container.console_panel.show()
-		editor_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		editor_container.line_edit.grab_focus()
-		if not _can_show_filter():
-			filter_line_edit.hide()
-	else:
-		editor_container.console_panel.hide()
-		filter_line_edit.show()
-		editor_container.size_flags_horizontal = Control.SIZE_SHRINK_END
-		main_hsplit.collapsed = true
+
+
+## Moves the prompt between the filter row (beside the console button) and its own row below it.
+func _apply_console_position() -> void:
+	if not is_instance_valid(editor_container) or not is_instance_valid(editor_container.console):
+		return
+	var console = editor_container.console
+	var filter_row = main_hsplit.get_parent()
+	var vbox = filter_row.get_parent()
+	if console_below_filter:
+		if console.get_parent() != vbox:
+			console.reparent(vbox, false)
+		vbox.move_child(console, filter_row.get_index() + 1)
+		console.custom_minimum_size.y = editor_container.custom_minimum_size.y
+	elif console.get_parent() != editor_container:
+		console.reparent(editor_container, false)
+		editor_container.move_child(console, 0)
+		console.custom_minimum_size.y = 0
+	_refresh_console_layout()
+
+
+func _refresh_console_layout() -> void:
+	var shown = editor_container.line_edit.visible
+	var inline_open = shown and not console_below_filter
+	editor_container.console_panel.visible = shown
+	main_hsplit.collapsed = not inline_open
+	editor_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL if inline_open else Control.SIZE_SHRINK_END
+	filter_line_edit.visible = not shown or _can_show_filter()
+
+
+func _toggle_console_position():
+	# Assign first: if set_setting re-emits synchronously it writes back this same value.
+	var below = not console_below_filter
+	console_below_filter = below
+	settings_helper.set_setting(EditorSet.CONSOLE_BELOW_FILTER, below)
 
 
 func _on_button_gui_input(event):
@@ -516,6 +553,7 @@ func _on_button_gui_input(event):
 				#options.add_option("OS/Toggle Mode", _toggle_os_mode)
 				#if os_mode:
 					#options.add_option("OS/Toggle Label", _toggle_os_label_minimum_size)
+			options.add_radio_option("Console Below Filter", _toggle_console_position, console_below_filter)
 			right_click_handler.display_on_control(options, editor_container.console_button)
 
 
@@ -525,7 +563,8 @@ func _toggle_filter(): #^ right click toggle
 	show_filter = filter_line_edit.visible
 
 func _can_show_filter():
-	return not _console_replace_filter and show_filter
+	# Replacing the filter only matters when the console shares its row.
+	return show_filter and (console_below_filter or not _console_replace_filter)
 
 
 func update_consoles():
@@ -681,6 +720,7 @@ class EditorSet:
 	const CONSOLE_REPLACE_FILTER = &"plugin/editor_console/active_console_replace_filter"
 	const TRACK_UNDO_REDO = &"plugin/editor_console/track_undo_redo"
 	const STREAM_OUTPUT = &"plugin/editor_console/stream_output"
+	const CONSOLE_BELOW_FILTER = &"plugin/editor_console/console_below_filter"
 	
 
 class Keys:
