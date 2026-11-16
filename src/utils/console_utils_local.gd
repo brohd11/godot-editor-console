@@ -58,7 +58,7 @@ class Colors:
 
 
 class Config:
-	const PROJECT_PATH = "res://.addons/editor_console/config.yml"  #! ignore-remote
+	const PROJECT_PATH = "res://.addons/editor_console/config.yml"  #! gdp-ignore
 	
 	const ALIAS = &"config.alias"
 	const STARTUP = &"config.startup"

@@ -1,5 +1,3 @@
-#! remote
-
 const DockManager = preload("res://addons/_lib/dock_manager/src/dock_manager.gd")
 
 const BottomPanel = preload("uid://b0bnfv62aocty") #! resolve EditorNodeRef.Refs.BottomPanel

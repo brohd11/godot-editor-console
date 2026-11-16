@@ -1,4 +1,4 @@
-class_name EditorConsoleSingleton #! singleton-module
+class_name EditorConsoleSingleton
 extends "res://addons/_lib/singleton/src/singleton_ref_count.gd" #! ext Singletons.RefCount
 
 
