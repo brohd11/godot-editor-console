@@ -489,12 +489,9 @@ func _get_editor_log_button_refs():
 
 func _on_filter_toggled(toggled:bool) -> void: # this is the filter toggle in editor log panel
 	editor_container.visible = toggled
-	if toggled:
-		_refresh_console_layout()
-		if editor_container.line_edit.visible and not filter_line_edit.visible:
-			editor_container.line_edit.grab_focus()
-	elif console_below_filter:
-		editor_container.console_panel.hide() # The below row is outside editor_container.
+	_refresh_console_layout()
+	if toggled and editor_container.line_edit.visible and not filter_line_edit.visible:
+		editor_container.line_edit.grab_focus()
 
 
 func _toggle_console():
@@ -509,8 +506,14 @@ func _apply_console_position() -> void:
 	if not is_instance_valid(editor_container) or not is_instance_valid(editor_container.console):
 		return
 	var console = editor_container.console
-	var filter_row = main_hsplit.get_parent()
-	var vbox = filter_row.get_parent()
+	# The row goes in the log text's VBox. The filter row is main_hsplit itself (4.6) or the
+	# HFlowContainer it sits in with the log buttons (4.7).
+	var vbox = EditorNodeRef.get_node_ref(EditorNodeRef.Nodes.EDITOR_LOG_RICH_TEXT_LABEL).get_parent()
+	var filter_row:Node = main_hsplit
+	while filter_row != null and filter_row.get_parent() != vbox:
+		filter_row = filter_row.get_parent()
+	if filter_row == null:
+		return
 	if console_below_filter:
 		if console.get_parent() != vbox:
 			console.reparent(vbox, false)
@@ -524,6 +527,11 @@ func _apply_console_position() -> void:
 
 
 func _refresh_console_layout() -> void:
+	# Hidden by the log's search toggle (<4.7): EditorLog owns the filter, and the below row
+	# sits outside editor_container so it must be hidden too.
+	if not editor_container.visible:
+		editor_container.console_panel.hide()
+		return
 	var shown = editor_container.line_edit.visible
 	var inline_open = shown and not console_below_filter
 	editor_container.console_panel.visible = shown
@@ -546,7 +554,7 @@ func _on_button_gui_input(event):
 		if event.button_index == 2:
 			var options = RightClickHandler.Options.new()
 			options.add_option("Toggle Console", _toggle_console)
-			if editor_container.line_edit.visible:
+			if editor_container.line_edit.visible and not console_below_filter:
 				options.add_option("Toggle Filter", _toggle_filter)
 				
 				# these would be dependenet on os_mode
@@ -563,8 +571,8 @@ func _toggle_filter(): #^ right click toggle
 	show_filter = filter_line_edit.visible
 
 func _can_show_filter():
-	# Replacing the filter only matters when the console shares its row.
-	return show_filter and (console_below_filter or not _console_replace_filter)
+	# Below mode always shows it (else the row is blank) without touching the inline preference.
+	return console_below_filter or (show_filter and not _console_replace_filter)
 
 
 func update_consoles():
