@@ -35,8 +35,7 @@ const Execution = UtilsLocal.Execution
 const ScriptEditorContext = preload("res://addons/editor_console/src/editor_plugins/script_editor.gd")
 const CallableCommand = preload("res://addons/editor_console/src/class/base/callable_command.gd")
 const ConsoleHost = preload("res://addons/editor_console/src/console_host.gd")
-const McpShBridge = preload("res://addons/_lib/mcp_sh_bridge/src/bridge.gd")
-const McpShBridgeConfig = preload("res://addons/_lib/mcp_sh_bridge/src/bridge_config.gd")
+const Mcp = preload("res://addons/editor_console/src/utils/mcp.gd")
 
 
 var right_click_handler:RightClickHandler
@@ -65,9 +64,8 @@ var undo_tracking:bool = true
 # When true, command output reaches the transcript as it is produced rather than only once the
 # submission finishes. Toggle via `config stream on|off`.
 var stream_output:bool = true
-# Serves the console's commands to mcp-sh-godot on loopback; started by the `mcp` command.
-var _mcp_sh_bridge:McpShBridge
-var _mcp_sh_bridge_sources:PackedStringArray = []
+# Serves the console's commands to mcp-sh-godot on loopback; driven by the `mcp` command.
+var mcp:Mcp
 # One compound undo buffer for every console and external request (`undoredo --compound`).
 var undo_session := Context.Undo.Session.new()
 
@@ -96,6 +94,7 @@ func _init(plugin:EditorPlugin) -> void:
 	settings_helper.subscribe_property(self, &"stream_output", EditorSet.STREAM_OUTPUT, true)
 	settings_helper.subscribe_property(self, &"console_below_filter", EditorSet.CONSOLE_BELOW_FILTER, false)
 	settings_helper.initialize()
+	mcp = Mcp.new(self)
 	
 	script_editor_context = ScriptEditorContext.new()
 	plugin.add_context_menu_plugin(EditorContextMenuPlugin.CONTEXT_SLOT_SCRIPT_EDITOR_CODE, script_editor_context)
@@ -158,51 +157,6 @@ static func create_host():
 	if not instance_valid():
 		return null
 	return ConsoleHost.new()
-
-## True while this console serves the mcp-sh bridge (`mcp --start`).
-static func is_bridge_serving() -> bool:
-	return get_mcp_sh_bridge() != null
-
-## The listening bridge, or null.
-static func get_mcp_sh_bridge() -> McpShBridge:
-	if not instance_valid():
-		return null
-	var bridge = get_instance()._mcp_sh_bridge
-	return bridge if is_instance_valid(bridge) and bridge.is_listening() else null
-
-## The bridge.json files the running bridge read.
-static func get_mcp_sh_bridge_sources() -> PackedStringArray:
-	return get_instance()._mcp_sh_bridge_sources if instance_valid() else PackedStringArray()
-
-## Read bridge.json and serve the console's commands. Returns an Error; a stale stopped bridge
-## is replaced. A child of this node, so it stops when the console unloads.
-static func start_mcp_sh_bridge() -> int:
-	if not _instance_valid_err(): return ERR_UNCONFIGURED
-	var ins = get_instance()
-	stop_mcp_sh_bridge()
-	var config = McpShBridgeConfig.load_config()
-	var bridge = McpShBridge.new()
-	bridge.name = "McpShBridge"
-	bridge.autostart = false
-	config.apply_to(bridge)
-	bridge.host = config.add_commands_to(ConsoleHost.new())
-	ins.add_child(bridge)
-	var err = bridge.start()
-	if err != OK:
-		bridge.queue_free()
-		return err
-	ins._mcp_sh_bridge = bridge
-	ins._mcp_sh_bridge_sources = config.sources
-	return OK
-
-static func stop_mcp_sh_bridge() -> void:
-	if not instance_valid(): return
-	var ins = get_instance()
-	if is_instance_valid(ins._mcp_sh_bridge):
-		ins._mcp_sh_bridge.stop()
-		ins._mcp_sh_bridge.queue_free()
-	ins._mcp_sh_bridge = null
-	ins._mcp_sh_bridge_sources = PackedStringArray()
 
 static func _instance_valid_err():
 	if instance_valid(): return true

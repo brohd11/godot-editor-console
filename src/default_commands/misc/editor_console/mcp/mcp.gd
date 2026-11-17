@@ -35,35 +35,39 @@ func _get_target_positional_count() -> int:
 	return 0
 
 func _execute(ctx:Context) -> int:
+	var ins = EditorConsoleSingleton.get_instance()
+	if ins == null or not is_instance_valid(ins):
+		ctx.append_error("Console singleton unavailable.")
+		return ExitCode.FAIL
+	var mcp:EditorConsoleSingleton.Mcp = ins.mcp
 	match action:
 		"--start":
-			var running = EditorConsoleSingleton.get_mcp_sh_bridge()
+			var running = mcp.get_bridge()
 			if running != null:
 				ctx.append_output("already listening on 127.0.0.1:%s" % running.get_port())
 				return ExitCode.OK
-			var err = EditorConsoleSingleton.start_mcp_sh_bridge()
+			var err = mcp.start_bridge()
 			if err != OK:
 				ctx.append_error("mcp: could not start (%s). Is another editor, or the mcp-sh-godot addon, using the port?" % error_string(err))
 				return ExitCode.FAIL
-			_print_status(ctx)
+			_print_status(ctx, mcp)
 		"--stop":
-			var was_running = EditorConsoleSingleton.is_bridge_serving()
-			EditorConsoleSingleton.stop_mcp_sh_bridge()
+			var was_running = mcp.is_serving()
+			mcp.stop_bridge()
 			ctx.append_output("stopped" if was_running else "not running")
 		_:
-			_print_status(ctx)
+			_print_status(ctx, mcp)
 	return ExitCode.OK
 
-func _print_status(ctx:Context) -> void:
-	var bridge = EditorConsoleSingleton.get_mcp_sh_bridge()
+func _print_status(ctx:Context, mcp:EditorConsoleSingleton.Mcp) -> void:
+	var bridge = mcp.get_bridge()
 	if bridge == null:
 		ctx.append_output("not running")
 		return
 	var token = ", token required" if bridge.token != "" else ""
 	ctx.append_output("listening on 127.0.0.1:%s (bridge %s%s)" % [bridge.get_port(), bridge.bridge_version(), token])
-	var sources = EditorConsoleSingleton.get_mcp_sh_bridge_sources()
-	if not sources.is_empty():
-		ctx.append_output("config: " + ", ".join(sources))
+	if not mcp.sources.is_empty():
+		ctx.append_output("config: " + ", ".join(mcp.sources))
 
 # One flag only: nothing more to offer once it's typed.
 func _get_completions(completion:Completion):
