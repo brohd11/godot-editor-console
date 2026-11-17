@@ -127,11 +127,14 @@ python3 addons/editor_console/_export_ignore/test/run_headless.py --godot godot
 python3 addons/_lib/gdsh/_export_ignore/test/run_headless.py --godot godot --export
 ```
 
-To let an agent run console commands, use [mcp-sh-godot](https://github.com/brohd11/mcp-sh-godot):
-its editor addon offers this console's commands while Editor Console is enabled. Other outside
-callers can use `EditorConsoleSingleton.create_host()`, a `GDSh.Host` with the console's commands,
-context and queue.
-The built-in MCP bridge (`mcp bridge`) and godot-editor-console-mcp are removed.
+To let an agent run console commands, register
+[mcp-sh-godot](https://github.com/brohd11/mcp-sh-godot) with the agent and run `mcp --start`.
+Add it to your startup commands to serve whenever the editor opens. The console serves its
+commands on `127.0.0.1:9510`, in its own context and queue. It reads mcp-sh-godot's
+`bridge.json` (port, token, extra commands), so that project addon isn't needed. If the addon is
+installed, it disables itself. `mcp --status` shows the port and config, and `mcp --stop` stops
+serving. Run `mcp --stop; mcp --start` after editing `bridge.json`. Other outside callers can use `EditorConsoleSingleton.create_host()`, a `GDSh.Host` with
+the console's commands, context and queue.
 
 Run `editor_console terminal` to try the separate floating rich-text terminal.
 It supports inline input, selectable scrollback, completion, and existing TUI commands.
