@@ -9,15 +9,18 @@ const UtilsManifest = preload("res://addons/_lib/gdsh_lib/utils/src/manifest.gd"
 ## Portable SceneTree commands. The manifest preload keeps them in plugin exports, and its
 ## (export-rewritten) path locates tree.gd.
 const TreeManifest = preload("res://addons/_lib/gdsh_lib/tree/src/manifest.gd")
+## Editor, settings and resource commands, shared with mcp-sh-godot's plugin. Same manifest trick.
+const EditorManifest = preload("res://addons/_lib/gdsh_lib/editor/src/manifest.gd")
 
 static func register_scopes():
 	var tree_manifest:Resource = TreeManifest # A typed variable reads the script resource, not a class member.
 	var paths = [
 		tree_manifest.resource_path.get_base_dir().path_join("tree.gd"),
 		"res://addons/editor_console/src/default_commands/format/format.gd",
-		"res://addons/editor_console/src/default_commands/resource/resource.gd",
-		"res://addons/editor_console/src/default_commands/editor/editor.gd",
-		"res://addons/editor_console/src/default_commands/settings/settings.gd",
+	]
+	for ns in EditorManifest.NAMESPACES:
+		paths.append(ns.resource_path)
+	paths += [
 		"res://addons/editor_console/src/default_commands/config/config.gd",
 		"res://addons/editor_console/src/default_commands/misc/misc.gd",
 		

@@ -600,6 +600,8 @@ func get_gdrc():
 	# GDSh.Utils host hooks: editor file caches and FileSystem dock refresh for portable utilities.
 	main_ctx.host_data["file_paths"] = func(directories:bool): return get_dir_paths() if directories else get_file_paths()
 	main_ctx.host_data["filesystem_changed"] = func(): EditorInterface.get_resource_filesystem().scan()
+	# `editor plugin` won't offer to disable the console itself.
+	main_ctx.host_data["host_plugin_id"] = _host_plugin_id()
 	# GDSh undo: changes go on the editor undo stack unless `config undo off`.
 	main_ctx.host_data["undo_redo"] = func(): return EditorInterface.get_editor_undo_redo() if undo_tracking else null
 	# The main ctx is rebuilt per request, so the singleton keeps the compound buffer.
@@ -677,6 +679,16 @@ static func load_command(path:String) -> Resource:
 		return ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE_DEEP)
 	else:
 		return load(path)
+
+## The addon folder holding this console, relocated exports included.
+static func _host_plugin_id() -> String:
+	var script:Script = SCRIPT # A typed variable reads the script resource, not a class member.
+	var directory = script.resource_path.get_base_dir()
+	while directory.begins_with("res://addons/"):
+		if FileAccess.file_exists(directory.path_join("plugin.cfg")):
+			return directory.trim_prefix("res://addons/")
+		directory = directory.get_base_dir()
+	return ""
 
 static func get_file_paths():
 	return get_instance()._get_cached("files")
