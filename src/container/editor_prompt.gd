@@ -7,6 +7,24 @@ var _stream_residual_error:=false
 var _tui_log:WeakRef
 var _tui_log_minimum:Vector2
 
+func _init(initial_context:Context=null) -> void:
+	super(initial_context)
+	link_clicked.connect(open_link)
+
+## Opens a clicked output path the way EditorLog does: scripts at the line (0 = no jump),
+## scenes in the scene editor, other resources in the inspector.
+static func open_link(path:String, line:int) -> void:
+	if not ResourceLoader.exists(path):
+		return
+	if path.get_extension() in ["tscn", "scn"]:
+		EditorInterface.open_scene_from_path(path)
+		return
+	var res = load(path)
+	if res is Script:
+		EditorInterface.edit_script(res, line)
+	elif res != null:
+		EditorInterface.edit_resource(res)
+
 func _get_host():
 	return host.get_ref() if host != null else null
 
@@ -83,12 +101,12 @@ func discard_pending_stream() -> void:
 	_stream_residual = ""
 	_stream_residual_error = false
 
-## Streamed text renders as BBCode here, matching `_append_result` and the editor log: `scan`
-## emits `[url=...]`, and this is the transcript that shows it as a link.
+## Streamed text renders as BBCode here, matching `_append_result` and the editor log, with
+## res:// paths in stdout wrapped as links.
 func _stream_chunk(text:String, is_error:bool) -> void:
 	if output != null:
 		if not is_error:
-			output.append_text(text)
+			output.append_text(_linked_bbcode(text))
 			return
 		output.push_color(Color("ff6b6b"))
 		if not _stream_err_header:
@@ -120,13 +138,13 @@ func _flush_residual() -> void:
 	_stream_residual = ""
 
 func _log_line(line:String, is_error:bool) -> String:
-	return "[color=ff6b6b]%s[/color]" % line if is_error else line
+	return "[color=ff6b6b]%s[/color]" % line if is_error else _linked_bbcode(line)
 
 func _append_result(result:Context) -> void:
 	var tail = _stream_tail(result.stdout, _stream_out_len)
 	var err_tail = _stream_tail(result.stderr, _stream_err_len)
 	if output != null:
-		if not tail.is_empty(): output.append_text(tail)
+		if not tail.is_empty(): output.append_text(_linked_bbcode(tail))
 		if not err_tail.is_empty():
 			output.push_color(Color("ff6b6b"))
 			if not _stream_err_header: output.append_text("stderr:\n")
@@ -134,7 +152,7 @@ func _append_result(result:Context) -> void:
 			output.pop()
 		output.scroll_to_line.call_deferred(maxi(0, output.get_line_count() - 1))
 	elif is_instance_valid(_get_host()):
-		if not tail.is_empty(): _get_host().print_to_console(tail.rstrip("\n"))
+		if not tail.is_empty(): _get_host().print_to_console(_linked_bbcode(tail.rstrip("\n")))
 		if not err_tail.is_empty():
 			var header = "" if _stream_err_header else "stderr:\n"
 			_get_host().print_to_console(header + err_tail.rstrip("\n"))

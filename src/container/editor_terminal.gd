@@ -1,6 +1,8 @@
 extends "res://addons/_lib/gdsh/src/ui/terminal_console.gd"
 ## Editor adapter for the optional floating terminal view.
 
+const Prompt = preload("res://addons/editor_console/src/container/editor_prompt.gd")
+
 var dock_button:Button
 
 func _init() -> void:
@@ -14,6 +16,7 @@ func _init() -> void:
 	context_factory = _build_context
 	execution_handler = _execute_submission
 	_syntax.highlight_globals = true
+	link_clicked.connect(Prompt.open_link)
 
 
 func _ready() -> void:
