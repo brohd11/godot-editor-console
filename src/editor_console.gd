@@ -231,6 +231,8 @@ func _load_default_commands():
 	
 	for directory in config.get_section(Config.COMMAND_DIRS, []):
 		scope_dict.merge(GDSh.Load.load_directory(directory), true)
+	for package in config.get_section(Config.COMMAND_PACKAGES, []):
+		scope_dict.merge(GDSh.Load.load_package(package), true)
 	update_consoles()
 	return true
 
@@ -333,6 +335,31 @@ static func remove_command_dir(dir_path:String, project:bool=false):
 	target_config.write()
 	get_instance()._load_default_commands()
 	pass
+
+## A command package is loaded through its <dir>/cmd (GDSh.Load.load_package).
+static func register_command_package(pkg_dir:String, project:bool=false):
+	if not _instance_valid_err(): return
+	pkg_dir = pkg_dir.trim_suffix("/")
+	var target_config = Config.get_target_config(project)
+	var packages = target_config.get_section(Config.COMMAND_PACKAGES, [])
+	if pkg_dir in packages:
+		print("Package already registered: %s" % pkg_dir)
+		return
+	packages.append(pkg_dir)
+	target_config.write()
+	get_instance()._load_default_commands()
+
+static func remove_command_package(pkg_dir:String, project:bool=false):
+	if not _instance_valid_err(): return
+	pkg_dir = pkg_dir.trim_suffix("/")
+	var target_config = Config.get_target_config(project)
+	var packages = target_config.get_section(Config.COMMAND_PACKAGES, [])
+	if not pkg_dir in packages:
+		print("Package not registered: %s" % pkg_dir)
+		return
+	packages.erase(pkg_dir)
+	target_config.write()
+	get_instance()._load_default_commands()
 
 
 func get_scope_script(scope_name):
@@ -699,6 +726,20 @@ static func get_dir_paths():
 ## {packages: {name: dir}, ambiguous: {name: [dirs]}} for every dir under res://addons with a PACKAGE_CFGS file.
 static func get_packages() -> Dictionary:
 	return get_instance()._get_cached("packages")
+
+## {name: dir} for packages with a cmd/ dir. Ambiguous names are keyed by their full dir instead.
+static func get_command_packages() -> Dictionary:
+	var found = get_packages()
+	var out = {}
+	for nm in found.packages:
+		var dir = found.packages[nm]
+		if not found.ambiguous.has(nm) and DirAccess.dir_exists_absolute(dir.path_join("cmd")):
+			out[nm] = dir
+	for nm in found.ambiguous:
+		for dir in found.ambiguous[nm]:
+			if DirAccess.dir_exists_absolute(dir.path_join("cmd")):
+				out[dir] = dir
+	return out
 
 const PACKAGE_CFGS = PackageCfg.NAMES
 const EXPORT_IGNORE_DIRS = ExportIgnore.NAMES # preference order

@@ -6,6 +6,7 @@ Usage: config scope dereg <options> <scope_name>"
 
 var set_flag:= false
 var dir_flag:=false
+var package_flag:=false
 var project_flag:=false
 
 static func get_command_name() -> String:
@@ -25,6 +26,9 @@ func _get_flags() -> Dictionary:
 	options.add_option("--dir", {
 		&"help": "--dir <flag> - register a directory that will be scanned for commands"
 	})
+	options.add_option("--package", {
+		&"help": "--package <flag> - de-register a command package"
+	})
 	options.add_option("--project", {
 		&"help": "De-register from the project override config instead of global."
 	})
@@ -37,6 +41,8 @@ func _process_flag(flag:String):
 		project_flag = true
 	elif flag == "--dir":
 		dir_flag = true
+	elif flag == "--package":
+		package_flag = true
 
 
 func _get_completions(_ctx:Completion):
@@ -47,6 +53,8 @@ func _get_completions(_ctx:Completion):
 		existing = target_config.get_section(UtilsLocal.Config.SCOPE_SET, [])
 	elif dir_flag:
 		existing = target_config.get_section(UtilsLocal.Config.COMMAND_DIRS, [])
+	elif package_flag:
+		existing = target_config.get_section(UtilsLocal.Config.COMMAND_PACKAGES, [])
 	else:
 		existing = target_config.get_section(UtilsLocal.Config.SCOPE, {}).keys()
 	
@@ -58,7 +66,7 @@ func _get_completions(_ctx:Completion):
 	return options.get_options()
 
 func _execute(ctx:Context):
-	if int(set_flag) + int(dir_flag) > 1:
+	if int(set_flag) + int(dir_flag) + int(package_flag) > 1:
 		ctx.append_error("Can only use one flag at a time.")
 		ctx.exit_code = ExitCode.FAIL
 		return
@@ -68,6 +76,8 @@ func _execute(ctx:Context):
 		EditorConsoleSingleton.remove_persistent_scope_set(scope_name, project_flag)
 	elif dir_flag:
 		EditorConsoleSingleton.remove_command_dir(scope_name, project_flag)
+	elif package_flag:
+		EditorConsoleSingleton.remove_command_package(scope_name, project_flag)
 	else:
 		EditorConsoleSingleton.remove_persistent_scope(scope_name, project_flag)
 	
