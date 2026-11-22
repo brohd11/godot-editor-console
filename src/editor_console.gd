@@ -212,6 +212,9 @@ func _load_default_commands():
 	
 	_get_scope_set_data(UtilsLocal.DefaultCommands)
 	scope_dict.merge(_temp_scope_dict, true)
+	# Shared ~/.gdsh and res://.gdsh commands and packages; the config's registrations below win.
+	for directory in GDSh.Load.default_dirs():
+		scope_dict.merge(GDSh.Load.load_directory(directory), true)
 	
 	var config = Config.get_merged_config()
 	
