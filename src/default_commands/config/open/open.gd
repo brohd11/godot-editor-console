@@ -41,6 +41,7 @@ func _execute(_ctx:Context):
 		_open(UtilsLocal.Config.get_project_config().file_path)
 	if global_flag:
 		_open(UtilsLocal.Config.get_global_config_path())
+	return ExitCode.OK
 
 func _open(path:String):
 	OS.shell_show_in_file_manager(ProjectSettings.globalize_path(path))

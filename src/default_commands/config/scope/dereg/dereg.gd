@@ -68,8 +68,7 @@ func _get_completions(_ctx:Completion):
 func _execute(ctx:Context):
 	if int(set_flag) + int(dir_flag) + int(package_flag) > 1:
 		ctx.append_error("Can only use one flag at a time.")
-		ctx.exit_code = ExitCode.FAIL
-		return
+		return ExitCode.FAIL
 	
 	var scope_name = positional_args[0]
 	if set_flag:
@@ -81,4 +80,4 @@ func _execute(ctx:Context):
 	else:
 		EditorConsoleSingleton.remove_persistent_scope(scope_name, project_flag)
 	
-	ctx.exit_code = ExitCode.OK
+	return ExitCode.OK

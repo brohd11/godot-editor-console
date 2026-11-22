@@ -65,8 +65,7 @@ func _get_completions(completion:Completion):
 func _execute(ctx:Context):
 	if int(set_flag) + int(dir_flag) + int(package_flag) > 1:
 		ctx.append_error("Can only use one flag at a time.")
-		ctx.exit_code = ExitCode.FAIL
-		return
+		return ExitCode.FAIL
 	
 	if set_flag:
 		var scope_path = positional_args[0]
@@ -77,13 +76,13 @@ func _execute(ctx:Context):
 	elif package_flag:
 		var pkg_dir = _resolve_package(ctx, positional_args[0])
 		if pkg_dir.is_empty():
-			ctx.exit_code = ExitCode.FAIL
-			return
+			return ExitCode.FAIL
 		EditorConsoleSingleton.register_command_package(pkg_dir, project_flag)
 	else:
 		var scope_name = positional_args[0]
 		var scope_path = positional_args[1]
 		EditorConsoleSingleton.register_persistent_scope(scope_name, scope_path, project_flag)
+	return ExitCode.OK
 
 
 ## A package dir (as completed) or package name, as a package dir with cmd/, or "" after an error.

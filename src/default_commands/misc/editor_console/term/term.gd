@@ -26,3 +26,4 @@ func _execute(ctx:Context):
 		ctx.append_error("Directory does not exist: " + dir)
 		return ExitCode.FAIL
 	UOs.launch_term("", dir)
+	return ExitCode.OK

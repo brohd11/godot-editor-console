@@ -72,3 +72,4 @@ func _execute(ctx:Context):
 		start_up_data.append(cmd)
 		config.write()
 		#OS.shell_show_in_file_manager(config.file_path)
+	return ExitCode.OK

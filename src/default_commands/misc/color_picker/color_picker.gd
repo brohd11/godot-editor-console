@@ -10,6 +10,7 @@ static func get_self_command_data() -> Dictionary:
 
 func _execute(_ctx:Context):
 	_color_picker()
+	return ExitCode.OK
 
 static func _color_picker():
 	var win = Window.new()

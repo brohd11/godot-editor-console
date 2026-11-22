@@ -110,6 +110,7 @@ func _execute(ctx:Context):
 			ctx.append_output("Alias doesn't exist: " + target_alias_name)
 		else:
 			ctx.append_output("Alias exists: " + alias_data.get(target_alias_name))
+	return ExitCode.OK
 
 func _get_target_config() -> Config:
 	if project_flag:

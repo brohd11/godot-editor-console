@@ -25,7 +25,7 @@ func start_bridge() -> int:
 	bridge.name = "McpShBridge"
 	bridge.autostart = false
 	config.apply_to(bridge)
-	# With the user and project commands/ folders, like mcp-sh-godot's addon.
+	# With the .gdsh and .mcp-sh/godot command roots, like mcp-sh-godot's addon.
 	bridge.host = config.add_commands_to(EditorConsoleSingleton.ConsoleHost.new(), true)
 	_owner.add_child(bridge)
 	var err = bridge.start()

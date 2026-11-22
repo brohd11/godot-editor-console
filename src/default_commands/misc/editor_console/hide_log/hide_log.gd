@@ -73,7 +73,7 @@ func _execute(_ctx:Context):
 			vbox.custom_minimum_size.y = 180 * EditorInterface.get_editor_scale()
 		else:
 			vbox.custom_minimum_size.y = 0
-		return
+		return ExitCode.OK
 	
 	if adjust_size > -1:
 		vbox.custom_minimum_size.y = max(0, adjust_size)
@@ -82,3 +82,4 @@ func _execute(_ctx:Context):
 		label.visible = not label.visible
 	if toggle_buttons:
 		buttons.visible = not buttons.visible
+	return ExitCode.OK

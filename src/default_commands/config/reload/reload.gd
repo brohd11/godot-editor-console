@@ -20,5 +20,6 @@ func _execute(ctx:Context):
 	var success = EditorConsoleSingleton.get_instance()._load_default_commands()
 	if success:
 		ctx.append_output("Commands reloaded.")
+	return ExitCode.OK
 	
 	

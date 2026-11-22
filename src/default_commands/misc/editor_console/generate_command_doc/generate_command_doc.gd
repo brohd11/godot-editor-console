@@ -61,6 +61,7 @@ func _execute(ctx:Context):
 
 		var f = FileAccess.open(ignore_dir.path_join("doc/commands.md"), FileAccess.WRITE)
 		f.store_string(md)
+	return ExitCode.OK
 
 
 func _render(cmd, depth:int, lines:Array):

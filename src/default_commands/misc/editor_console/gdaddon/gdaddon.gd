@@ -18,3 +18,4 @@ static func get_self_command_data():
 func _execute(_ctx:Context):
 	
 	UOs.launch_term("gdaddon")
+	return ExitCode.OK

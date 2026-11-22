@@ -14,6 +14,7 @@ static func get_self_command_data() -> Dictionary:
 
 func _execute(ctx:Context):
 	_resolve_const(ScriptEditorRef.get_current_code_edit(), ctx)
+	return ExitCode.OK
 
 static func _resolve_const(script_editor:CodeEdit, ctx:Context):
 	var current_script_path = ScriptEditorRef.get_current_script().resource_path
