@@ -1,19 +1,19 @@
 extends RefCounted
 const Sh = preload("res://addons/_lib/gdsh/_ns/gd_sh.gd")
 
-class EditorRouter extends "res://addons/_lib/gdsh_lib/editor/src/editor/editor.gd":
+class EditorRouter extends "res://addons/_lib/gdsh_lib/editor/cmd/editor/editor.gd":
 	var program
 	func _get_commands() -> Dictionary:
 		return {"plugin": {&"get_command": func(): return program}}
 
-class Plugins extends "res://addons/_lib/gdsh_lib/editor/src/editor/plugin/plugin.gd":
+class Plugins extends "res://addons/_lib/gdsh_lib/editor/cmd/editor/plugin/plugin.gd":
 	var directory:String
 	var states:Dictionary = {}
 	var calls:Array = []
 	var reject:=false
 	var available:=true
 	func _get_commands() -> Dictionary:
-		return preload("res://addons/_lib/gdsh_lib/editor/src/editor/plugin/plugin.gd").new().get_commands()
+		return preload("res://addons/_lib/gdsh_lib/editor/cmd/editor/plugin/plugin.gd").new().get_commands()
 	func _editor_available() -> bool: return available
 	func _addons_path() -> String: return directory
 	func _host_plugin_id() -> String: return "host"

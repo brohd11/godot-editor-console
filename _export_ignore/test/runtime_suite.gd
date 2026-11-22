@@ -25,16 +25,16 @@ class DockedPromptProbe extends "res://addons/editor_console/src/container/edito
 	func _get_editor_log() -> Control:
 		return log_control if is_instance_valid(log_control) else null
 
-class CurrentScriptProbe extends "res://addons/_lib/gdsh_lib/editor/src/editor/script/script.gd":
+class CurrentScriptProbe extends "res://addons/_lib/gdsh_lib/editor/cmd/editor/script/script.gd":
 	var selected:Script
 	func _current_script() -> Script:
 		return selected
 
-class EditorRouterProbe extends "res://addons/_lib/gdsh_lib/editor/src/editor/editor.gd":
+class EditorRouterProbe extends "res://addons/_lib/gdsh_lib/editor/cmd/editor/editor.gd":
 	var selected:Script
 	var exact_override:bool = false
 	func _get_commands() -> Dictionary:
-		var commands = preload("res://addons/_lib/gdsh_lib/editor/src/editor/editor.gd").new().get_commands()
+		var commands = preload("res://addons/_lib/gdsh_lib/editor/cmd/editor/editor.gd").new().get_commands()
 		commands["script"][&"get_command"] = func():
 			var command = CurrentScriptProbe.new()
 			command.selected = selected
