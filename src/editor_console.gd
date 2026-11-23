@@ -70,6 +70,8 @@ var mcp:Mcp
 var undo_session := Context.Undo.Session.new()
 
 var _cache:= {}
+# Plugins' cmd/ dirs load with the enabled list (GDSh.Load.plugin_dirs); a change reloads commands.
+var _enabled_plugins:PackedStringArray = []
 # Serial runner (run_serialized): console submissions, external requests (godot-shell) and startup take turns.
 signal _serial_turn_freed
 var _serial_running := false
@@ -105,6 +107,7 @@ func _init(plugin:EditorPlugin) -> void:
 func _ready() -> void:
 	_ready_deferred.call_deferred()
 	EditorInterface.get_resource_filesystem().filesystem_changed.connect(_on_filesystem_changed)
+	ProjectSettings.settings_changed.connect(_on_project_settings_changed)
 
 func _ready_deferred():
 	_load_default_commands()
@@ -124,6 +127,11 @@ func _start_up_commands():
 	await run_serialized(func(): return await Execution.execute_command_multiline(cmds, get_main_ctx()))
 	
 	
+
+func _on_project_settings_changed():
+	var enabled = ProjectSettings.get_setting("editor_plugins/enabled", PackedStringArray())
+	if enabled != _enabled_plugins:
+		_load_default_commands()
 
 func _on_filesystem_changed():
 	if _cache == null:
@@ -212,7 +220,8 @@ func _load_default_commands():
 	
 	_get_scope_set_data(UtilsLocal.DefaultCommands)
 	scope_dict.merge(_temp_scope_dict, true)
-	# Shared ~/.gdsh and res://.gdsh commands and packages; the config's registrations below win.
+	# Enabled plugins' cmd/, then shared ~/.gdsh and res://.gdsh; the config's registrations below win.
+	_enabled_plugins = ProjectSettings.get_setting("editor_plugins/enabled", PackedStringArray())
 	for directory in GDSh.Load.default_dirs():
 		scope_dict.merge(GDSh.Load.load_directory(directory), true)
 	
