@@ -664,6 +664,8 @@ func get_gdrc():
 	var config = Config.get_merged_config()
 	main_ctx.aliases = config.get_section(Config.ALIAS, {}).duplicate()
 	
+	# Lets an rc skip editor-only lines elsewhere (the gdsh CLI sets "cli").
+	main_ctx.variables["$GDSH_HOST"] = "editor"
 	var home_gdrc = UtilsLocal.ConsoleOS.get_os_home_dir().path_join(".gdrc")
 	if FileAccess.file_exists(home_gdrc):
 		Execution.source_file(home_gdrc, main_ctx)
