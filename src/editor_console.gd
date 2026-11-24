@@ -36,6 +36,7 @@ const ScriptEditorContext = preload("res://addons/editor_console/src/editor_plug
 const CallableCommand = preload("res://addons/editor_console/src/class/base/callable_command.gd")
 const ConsoleHost = preload("res://addons/editor_console/src/console_host.gd")
 const Mcp = preload("res://addons/editor_console/src/utils/mcp.gd")
+const TestTargets = preload("res://addons/_lib/gdsh_lib/test/src/test_targets.gd")
 
 
 var right_click_handler:RightClickHandler
@@ -777,22 +778,7 @@ func _get_cached(key:String):
 	return _cache.get(key)
 
 func _build_packages(dirs:Array) -> Dictionary:
-	var found = {"packages": {}, "ambiguous": {}}
-	for dir:String in dirs:
-		if not dir.begins_with("res://addons/"):
-			continue
-		# ignore dirs hold export copies that carry their own plugin.cfg
-		var segments = dir.trim_prefix("res://").split("/")
-		if EXPORT_IGNORE_DIRS.any(func(d): return d in segments):
-			continue
-		if not PackageCfg.has_cfg(dir):
-			continue
-		var nm = dir.get_file()
-		if found.packages.has(nm):
-			found.ambiguous.get_or_add(nm, [found.packages[nm]]).append(dir)
-		else:
-			found.packages[nm] = dir
-	return found
+	return TestTargets.build_packages(dirs)
 
 
 class EditorSet:

@@ -32,6 +32,15 @@ config # Adjust configuration of editor console.
 	└── undo # Toggle whether mutating scene commands register on the editor undo stack.
 ```
 
+## data
+
+```text
+data # Convert data files between JSON, YAML and Godot binary.
+	└── to_bin # Convert a JSON or YAML file to Godot binary (FileAccess.store_var), written as .bin or --ext.
+	└── to_json # Convert a YAML, JSON or binary file to JSON (written as .json unless a write path is given).
+	└── to_yaml # Convert a YAML, JSON or binary file to YAML (written as .yml unless a write path is given).
+```
+
 ## editor
 
 ```text
@@ -76,7 +85,6 @@ format # Formatting tools for the script open in the editor.
 ```text
 misc # Misc commands.
 	└── color_picker # Open a color picker in a window, selecting a color copies the html string to clipboard
-	└── convert_data # Convert data between: json <-> yaml <-> binary
 	└── editor_console # Utility commands, all subcommands also accessible directly by name.
 		└── gdaddon # Launch a terminal with gdaddon running.
 		└── generate_command_doc # Generate a markdown command-tree doc (commands.md style) and print it.

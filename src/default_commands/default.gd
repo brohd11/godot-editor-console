@@ -3,18 +3,20 @@ extends EditorConsoleSingleton.ConsoleCommandSetBase
 const HIDDEN_DIR = "res://addons/editor_console/src/default_commands/hidden/"
 const EDITOR_COMMANDS_DIR = "res://addons/editor_console/src/default_commands/misc/editor_console/"
 const TEMP_DIR = "res://temp_console/"
-## gdsh_lib packages: utils, tree and editor (shared with mcp-sh-godot's plugin). Each manifest
+## gdsh_lib packages: utils, tree, editor and data (utils/tree/editor shared with mcp-sh-godot's plugin). Each manifest
 ## preload keeps its package in plugin exports, and its (export-rewritten) path locates the
 ## package's cmd/ dir.
 const UtilsManifest = preload("res://addons/_lib/gdsh_lib/utils/cmd/manifest.gd")
 const TreeManifest = preload("res://addons/_lib/gdsh_lib/tree/cmd/manifest.gd")
 const EditorManifest = preload("res://addons/_lib/gdsh_lib/editor/cmd/manifest.gd")
+const DataManifest = preload("res://addons/_lib/gdsh_lib/data/cmd/manifest.gd")
 
 static func register_scopes():
 	var data = {}
 	_merge_package(TreeManifest, data)
 	add_command_to_dict("res://addons/editor_console/src/default_commands/format/format.gd", data)
 	_merge_package(EditorManifest, data)
+	_merge_package(DataManifest, data)
 	for p in [
 		"res://addons/editor_console/src/default_commands/config/config.gd",
 		"res://addons/editor_console/src/default_commands/misc/misc.gd",
