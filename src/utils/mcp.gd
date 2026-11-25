@@ -24,6 +24,8 @@ func start_bridge() -> int:
 	var bridge = McpShBridge.new()
 	bridge.name = "McpShBridge"
 	bridge.autostart = false
+	if "server_label" in bridge: # bridge 0.1.5+
+		bridge.server_label = "editor_console " + _console_version()
 	config.apply_to(bridge)
 	# With the .gdsh and .mcp-sh/godot command roots, like mcp-sh-godot's addon.
 	bridge.host = config.add_commands_to(EditorConsoleSingleton.ConsoleHost.new(), true)
@@ -35,6 +37,15 @@ func start_bridge() -> int:
 	_bridge = bridge
 	sources = config.sources
 	return OK
+
+
+## The console's version, from its plugin.cfg (res://addons/editor_console/plugin.cfg).
+func _console_version() -> String:
+	var cfg = ConfigFile.new()
+	var dir = get_script().resource_path.get_base_dir().get_base_dir().get_base_dir()
+	if cfg.load(dir.path_join("plugin.cfg")) != OK:
+		return "unknown"
+	return str(cfg.get_value("plugin", "version", "unknown"))
 
 
 func stop_bridge() -> void:
