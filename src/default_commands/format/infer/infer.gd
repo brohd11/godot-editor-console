@@ -1,4 +1,5 @@
 extends EditorConsoleSingleton.CommandBase
+#! gdp-strip-cast GDScriptParser
 
 const EditorGDScriptParser = preload("uid://t2dewmuth0sy") #! resolve EditorParser.EditorGDScriptParser
 const VarInsertType = preload("uid://ci11vn1timw1r") #! resolve EditorParser.Other.VarInsertType
