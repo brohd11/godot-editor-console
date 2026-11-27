@@ -7,11 +7,11 @@ Run `help` or `<command> --help` for current metadata.
 
 The console has these commands built in:
 
-## editor plugin
+## settings plugin
 
-`editor plugin` opens an interactive addon list in a docked or floating console. Enter toggles enabled
+`settings plugin` opens an interactive addon list in a docked or floating console. Enter toggles enabled
 state, R refreshes, and Escape exits. Editor Console itself is non-toggleable here.
-`editor plugin enable` retains its existing noninteractive behavior.
+`settings plugin <id>... --enable | --disable | --reload` and `--list` are the noninteractive forms.
 
 ## config
 

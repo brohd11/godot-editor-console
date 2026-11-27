@@ -17,6 +17,7 @@ static func register_variables():
 static func add_command_to_dict(script_path:String, dict:Dictionary):
 	var script = GDShLoad.load_command(script_path)
 	if script == null: return
-	dict[script.get_command_name()] = {
-		ScopeDataKeys.SCRIPT: script
-	}
+	for name in [script.get_command_name()] + Array(script.get_command_aliases()):
+		dict[name] = {
+			ScopeDataKeys.SCRIPT: script
+		}

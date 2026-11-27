@@ -640,7 +640,7 @@ func get_gdrc():
 	# GDSh.Utils host hooks: editor file caches and FileSystem dock refresh for portable utilities.
 	main_ctx.host_data["file_paths"] = func(directories:bool): return get_dir_paths() if directories else get_file_paths()
 	main_ctx.host_data["filesystem_changed"] = func(): EditorInterface.get_resource_filesystem().scan()
-	# `editor plugin` won't offer to disable the console itself.
+	# `settings plugin` won't offer to disable the console itself.
 	main_ctx.host_data["host_plugin_id"] = _host_plugin_id()
 	# GDSh undo: changes go on the editor undo stack unless `config undo off`.
 	main_ctx.host_data["undo_redo"] = func(): return EditorInterface.get_editor_undo_redo() if undo_tracking else null

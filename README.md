@@ -54,7 +54,7 @@ callable, and `script --class=` still completes all classes. List global classes
 
 ## Interactive plugin list
 
-Run `editor plugin` in a docked or floating console to browse immediate `res://addons/*/plugin.cfg`
+Run `settings plugin` in a docked or floating console to browse immediate `res://addons/*/plugin.cfg`
 entries and their enabled status. Enter toggles the selected addon without closing
 the list; held Enter does not repeat. Arrows, Page Up/Down, Home/End and wheel/pan
 scrolling navigate, `R` rescans while preserving selection, and Escape exits.
@@ -65,7 +65,8 @@ See [GDSh TUI components](../_lib/gdsh_lib/tui/README.md) for screen navigation 
 Custom TUIs override `update(message: GDSh.TUIMsg)` and `view() -> String`; see GDSh's
 [TUI guide](../_lib/gdsh/_export_ignore/docs/tui.md) for a complete list example,
 message types, viewport sizing and lifecycle hooks.
-`editor plugin enable` remains available for noninteractive use. The docked TUI temporarily
+`settings plugin <id> --enable` / `--disable` (and `--list`) are the noninteractive forms;
+the gdsh CLI runs them headless by editing project.godot. The docked TUI temporarily
 replaces the editor log's content area and restores its controls on exit; log messages
 continue to accumulate while it is open. Commands with multiple modes can override
 `_execute(ctx)` and call `await run()` to enter their TUI.
